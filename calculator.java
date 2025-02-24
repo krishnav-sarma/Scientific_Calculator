@@ -1,8 +1,7 @@
-
-
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
+import java.util.ArrayList;
 import java.lang.Math;
 
 public class calculator extends JFrame implements ActionListener {
@@ -11,13 +10,16 @@ public class calculator extends JFrame implements ActionListener {
     private double result = 0;
     private String operator = "";
 
-    private JPanel scientificPanel; // Panel for scientific buttons
-    private boolean isScientificVisible = false; // Track visibility of scientific panel
+    private JPanel scientificPanel;
+    private JPanel historyPanel; // Panel for history
+    private boolean isScientificVisible = false;
+    private boolean isHistoryVisible = false; // Track visibility of history panel
+    private DefaultListModel<String> historyModel; // Model to store history
 
     // Constructor for setting up the GUI
     public calculator() {
         setTitle("Scientific Calculator");
-        setSize(400, 600);
+        setSize(500, 700);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLayout(new BorderLayout());
 
@@ -37,10 +39,8 @@ public class calculator extends JFrame implements ActionListener {
                 "4", "5", "6", "*",
                 "1", "2", "3", "-",
                 "0", ".", "=", "+",
-                "C", "DEL", "SCI", ""
+                "C", "DEL", "SCI", "HIS"
         };
-
-
 
         for (String text : buttons) {
             JButton button = new JButton(text);
@@ -48,33 +48,22 @@ public class calculator extends JFrame implements ActionListener {
             button.addActionListener(this);
 
             // Set background and text color
-            button.setBackground(new Color(63,63,63));
+            button.setBackground(new Color(63, 63, 63));
             button.setForeground(Color.WHITE);
             button.setOpaque(true);
             button.setBorderPainted(false);
 
-
-
-            // Highlight '=' button in yellow
-            if (text.equals("=")) {
+            // Highlight '=' and special buttons in red
+            if (text.equals("=") || text.equals("SCI") || text.equals("HIS")) {
                 button.setBackground(Color.RED);
-                button.setOpaque(true);
-                button.setBorderPainted(false);
-            }
-            if(text.equals("SCI")) {
-                button.setBackground(Color.RED);
-                button.setOpaque(true);
-                button.setBorderPainted(false);
-
             }
 
             mainPanel.add(button);
         }
 
-        // Scientific Buttons Panel (Initially Hidden)
+        // Scientific Buttons Panel
         scientificPanel = new JPanel();
         scientificPanel.setLayout(new GridLayout(2, 4, 10, 10));
-
         String[] sciButtons = {
                 "sin", "cos", "tan", "√",
                 "x^2", "log", "π", "e"
@@ -84,29 +73,36 @@ public class calculator extends JFrame implements ActionListener {
             JButton button = new JButton(text);
             button.setFont(new Font("Arial", Font.BOLD, 20));
             button.addActionListener(this);
-            button.setBackground(new Color(63,63,63));
+            button.setBackground(new Color(63, 63, 63));
             button.setForeground(Color.WHITE);
             button.setOpaque(true);
             button.setBorderPainted(false);
             scientificPanel.add(button);
-
         }
 
-        scientificPanel.setVisible(false); // Hide initially
+        scientificPanel.setVisible(false);
 
-        // Container Panel to add vertical gap between panels
+        // History Panel
+        historyModel = new DefaultListModel<>();
+        JList<String> historyList = new JList<>(historyModel);
+        historyPanel = new JPanel(new BorderLayout());
+        historyPanel.add(new JLabel("History"), BorderLayout.NORTH);
+        historyPanel.add(new JScrollPane(historyList), BorderLayout.CENTER);
+        historyPanel.setVisible(false);
+
+        // Container Panel to add vertical gap
         JPanel panelContainer = new JPanel();
-        panelContainer.setLayout(new BoxLayout(panelContainer, BoxLayout.Y_AXIS)); // Vertical stacking
+        panelContainer.setLayout(new BoxLayout(panelContainer, BoxLayout.Y_AXIS));
         panelContainer.add(mainPanel);
-        panelContainer.add(Box.createVerticalStrut(20)); // Add 20px vertical gap
+        panelContainer.add(Box.createVerticalStrut(20));
         panelContainer.add(scientificPanel);
+        panelContainer.add(historyPanel);
 
         add(panelContainer, BorderLayout.CENTER);
 
         setVisible(true);
     }
 
-    // Handle button clicks
     @Override
     public void actionPerformed(ActionEvent e) {
         String command = e.getActionCommand();
@@ -130,6 +126,9 @@ public class calculator extends JFrame implements ActionListener {
                 break;
             case "SCI":
                 toggleScientific();
+                break;
+            case "HIS":
+                toggleHistory();
                 break;
             case "+":
             case "-":
@@ -158,7 +157,6 @@ public class calculator extends JFrame implements ActionListener {
         }
     }
 
-    // Perform calculation
     private void calculate() {
         try {
             double secondOperand = Double.parseDouble(currentInput);
@@ -177,13 +175,13 @@ public class calculator extends JFrame implements ActionListener {
                     break;
             }
             display.setText(String.valueOf(result));
+            historyModel.addElement(currentInput + " " + operator + " " + secondOperand + " = " + result);
             currentInput = String.valueOf(result);
         } catch (NumberFormatException ex) {
             display.setText("Error");
         }
     }
 
-    // Apply scientific functions
     private void applyFunction(String func) {
         try {
             double value = Double.parseDouble(currentInput);
@@ -214,21 +212,27 @@ public class calculator extends JFrame implements ActionListener {
                     break;
             }
             display.setText(String.valueOf(result));
+            historyModel.addElement(func + "(" + value + ") = " + result);
             currentInput = String.valueOf(result);
         } catch (NumberFormatException ex) {
             display.setText("Error");
         }
     }
 
-    // Toggle the visibility of scientific buttons
     private void toggleScientific() {
         isScientificVisible = !isScientificVisible;
         scientificPanel.setVisible(isScientificVisible);
-        revalidate(); // Refresh the layout
+        revalidate();
         repaint();
     }
 
-    // Main method to run the calculator
+    private void toggleHistory() {
+        isHistoryVisible = !isHistoryVisible;
+        historyPanel.setVisible(isHistoryVisible);
+        revalidate();
+        repaint();
+    }
+
     public static void main(String[] args) {
         SwingUtilities.invokeLater(calculator::new);
     }
