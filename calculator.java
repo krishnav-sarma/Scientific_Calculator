@@ -35,7 +35,7 @@ public class calculator extends JFrame implements ActionListener {
                 "4", "5", "6", "*",
                 "1", "2", "3", "-",
                 "0", ".", "=", "+",
-                "C", "DEL", "Sci", ""
+                "C", "DEL", "SCI", ""
         };
 
         for (String text : buttons) {
@@ -43,17 +43,26 @@ public class calculator extends JFrame implements ActionListener {
             button.setFont(new Font("Arial", Font.BOLD, 18));
             button.addActionListener(this);
 
+            // Set background and text color
+            button.setBackground(new Color(63, 63, 63));
+            button.setForeground(Color.WHITE);
+            button.setOpaque(true);
+            button.setBorderPainted(false);
+
             // Highlight '=' button in yellow
             if (text.equals("=")) {
-                button.setBackground(Color.YELLOW);
+                button.setBackground(Color.RED);
+                button.setOpaque(true);
+                button.setBorderPainted(false);
+            }
+            if (text.equals("SCI")) {
+                button.setBackground(Color.RED);
                 button.setOpaque(true);
                 button.setBorderPainted(false);
             }
 
             mainPanel.add(button);
         }
-
-        add(mainPanel, BorderLayout.CENTER);
 
         // Scientific Buttons Panel (Initially Hidden)
         scientificPanel = new JPanel();
@@ -66,13 +75,25 @@ public class calculator extends JFrame implements ActionListener {
 
         for (String text : sciButtons) {
             JButton button = new JButton(text);
-            button.setFont(new Font("Arial", Font.BOLD, 18));
+            button.setFont(new Font("Arial", Font.BOLD, 20));
             button.addActionListener(this);
+            button.setBackground(new Color(63, 63, 63));
+            button.setForeground(Color.WHITE);
+            button.setOpaque(true);
+            button.setBorderPainted(false);
             scientificPanel.add(button);
         }
 
         scientificPanel.setVisible(false); // Hide initially
-        add(scientificPanel, BorderLayout.SOUTH);
+
+        // Container Panel to add vertical gap between panels
+        JPanel panelContainer = new JPanel();
+        panelContainer.setLayout(new BoxLayout(panelContainer, BoxLayout.Y_AXIS)); // Vertical stacking
+        panelContainer.add(mainPanel);
+        panelContainer.add(Box.createVerticalStrut(20)); // Add 20px vertical gap
+        panelContainer.add(scientificPanel);
+
+        add(panelContainer, BorderLayout.CENTER);
 
         setVisible(true);
     }
@@ -99,7 +120,7 @@ public class calculator extends JFrame implements ActionListener {
                 calculate();
                 operator = "";
                 break;
-            case "Sci":
+            case "SCI":
                 toggleScientific();
                 break;
             case "+":
