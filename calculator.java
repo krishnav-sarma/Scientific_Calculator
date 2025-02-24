@@ -1,3 +1,5 @@
+
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
@@ -38,16 +40,20 @@ public class calculator extends JFrame implements ActionListener {
                 "C", "DEL", "SCI", ""
         };
 
+
+
         for (String text : buttons) {
             JButton button = new JButton(text);
             button.setFont(new Font("Arial", Font.BOLD, 18));
             button.addActionListener(this);
 
             // Set background and text color
-            button.setBackground(new Color(63, 63, 63));
+            button.setBackground(new Color(63,63,63));
             button.setForeground(Color.WHITE);
             button.setOpaque(true);
             button.setBorderPainted(false);
+
+
 
             // Highlight '=' button in yellow
             if (text.equals("=")) {
@@ -55,10 +61,11 @@ public class calculator extends JFrame implements ActionListener {
                 button.setOpaque(true);
                 button.setBorderPainted(false);
             }
-            if (text.equals("SCI")) {
+            if(text.equals("SCI")) {
                 button.setBackground(Color.RED);
                 button.setOpaque(true);
                 button.setBorderPainted(false);
+
             }
 
             mainPanel.add(button);
@@ -77,11 +84,12 @@ public class calculator extends JFrame implements ActionListener {
             JButton button = new JButton(text);
             button.setFont(new Font("Arial", Font.BOLD, 20));
             button.addActionListener(this);
-            button.setBackground(new Color(63, 63, 63));
+            button.setBackground(new Color(63,63,63));
             button.setForeground(Color.WHITE);
             button.setOpaque(true);
             button.setBorderPainted(false);
             scientificPanel.add(button);
+
         }
 
         scientificPanel.setVisible(false); // Hide initially
