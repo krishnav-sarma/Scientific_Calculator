@@ -163,6 +163,7 @@ public class calculator extends JFrame implements ActionListener {
     private void calculate() {
         try {
             double secondOperand = Double.parseDouble(currentInput);
+            String fullOperation = result + " " + operator + " " + secondOperand;
             switch (operator) {
                 case "+":
                     result += secondOperand;
@@ -177,8 +178,9 @@ public class calculator extends JFrame implements ActionListener {
                     result /= secondOperand;
                     break;
             }
-            display.setText(String.valueOf(result));
+            display.setText(fullOperation + " = " + result);
             currentInput = String.valueOf(result);
+
         } catch (NumberFormatException ex) {
             display.setText("Error");
         }
