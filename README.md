@@ -39,5 +39,6 @@ A feature-rich **Scientific Calculator** built using Java Swing. This calculator
    ```bash
    git clone https://github.com/yourusername/scientific-calculator.git
 
-![WhatsApp Image 2025-02-26 at 01 17 17_c85f5084](https://github.com/user-attachments/assets/7522e287-2867-4b61-a5bf-97eb68bf2748)
+![WhatsApp Image 2025-02-26 at 01 18 22_4a7c5288](https://github.com/user-attachments/assets/fa3deb67-1005-4089-8110-7eb48448fd0d)
+
 
