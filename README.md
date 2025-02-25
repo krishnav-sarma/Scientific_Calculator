@@ -46,3 +46,9 @@ A feature-rich *Scientific Calculator* built using Java Swing. This calculator s
 1. *Clone the repository* or download the source code:
    ```bash
    git clone https://github.com/yourusername/scientific-calculator.git
+
+
+
+
+https://github.com/user-attachments/assets/a1c457a8-ffe8-4c01-8cf3-b71d11516f54
+
