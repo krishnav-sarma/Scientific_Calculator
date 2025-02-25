@@ -2,6 +2,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.geom.RoundRectangle2D;
+import java.util.LinkedList;
 
 public class calculator extends JFrame implements ActionListener {
     private JTextField display;
@@ -9,10 +10,12 @@ public class calculator extends JFrame implements ActionListener {
     private double result = 0;
     private String operator = "";
 
-    private JPanel scientificPanel; // Panel for scientific buttons
-    private boolean isScientificVisible = false; // Track visibility of scientific panel
+    private JPanel scientificPanel;
+    private boolean isScientificVisible = false;
+    private LinkedList<String> history;
+    private JPanel historyPanel;
+    private JTextArea historyArea;
 
-    // Custom rounded button class
     class RoundedButton extends JButton {
         public RoundedButton(String text) {
             super(text);
@@ -26,7 +29,7 @@ public class calculator extends JFrame implements ActionListener {
             Graphics2D g2 = (Graphics2D) g.create();
             g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
             g2.setColor(getBackground());
-            g2.fillRoundRect(0, 0, getWidth(), getHeight(), 20, 20); // Rounded rectangle
+            g2.fillRoundRect(0, 0, getWidth(), getHeight(), 20, 20);
             g2.setColor(getForeground());
             g2.setFont(getFont());
             FontMetrics fm = g2.getFontMetrics();
@@ -37,24 +40,20 @@ public class calculator extends JFrame implements ActionListener {
         }
     }
 
-    // Constructor for setting up the GUI
     public calculator() {
         setTitle("Scientific Calculator");
-        setSize(450, 600);
+        setSize(600, 600);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLayout(new BorderLayout());
 
-        // Display Area
         display = new JTextField();
         display.setEditable(false);
         display.setFont(new Font("Arial", Font.BOLD, 24));
         add(display, BorderLayout.NORTH);
 
-        // Main Button Panel
         JPanel mainPanel = new JPanel();
         mainPanel.setLayout(new GridLayout(5, 4, 10, 10));
 
-        // Main Buttons
         String[] buttons = {
                 "7", "8", "9", "/",
                 "4", "5", "6", "*",
@@ -76,7 +75,6 @@ public class calculator extends JFrame implements ActionListener {
             mainPanel.add(button);
         }
 
-        // Scientific Buttons Panel (Initially Hidden)
         scientificPanel = new JPanel();
         scientificPanel.setLayout(new GridLayout(2, 4, 10, 10));
 
@@ -96,7 +94,6 @@ public class calculator extends JFrame implements ActionListener {
 
         scientificPanel.setVisible(false);
 
-        // Container Panel to add vertical gap between panels
         JPanel panelContainer = new JPanel();
         panelContainer.setLayout(new BoxLayout(panelContainer, BoxLayout.Y_AXIS));
         panelContainer.add(mainPanel);
@@ -104,10 +101,19 @@ public class calculator extends JFrame implements ActionListener {
         panelContainer.add(scientificPanel);
 
         add(panelContainer, BorderLayout.CENTER);
+
+        history = new LinkedList<>();
+        historyPanel = new JPanel(new BorderLayout());
+        historyArea = new JTextArea(10, 20);
+        historyArea.setEditable(false);
+        historyArea.setFont(new Font("Arial", Font.PLAIN, 14));
+        historyPanel.add(new JScrollPane(historyArea), BorderLayout.CENTER);
+        historyPanel.setVisible(false);
+        add(historyPanel, BorderLayout.EAST);
+
         setVisible(true);
     }
 
-    // Handle button clicks
     @Override
     public void actionPerformed(ActionEvent e) {
         String command = e.getActionCommand();
@@ -132,6 +138,9 @@ public class calculator extends JFrame implements ActionListener {
             case "SCI":
                 toggleScientific();
                 break;
+            case "HIS":
+                toggleHistory();
+                break;
             case "+":
             case "-":
             case "*":
@@ -142,16 +151,6 @@ public class calculator extends JFrame implements ActionListener {
                     currentInput = "";
                 }
                 break;
-            case "sin":
-            case "cos":
-            case "tan":
-            case "√":
-            case "x^2":
-            case "log":
-            case "π":
-            case "e":
-                applyFunction(command);
-                break;
             default:
                 currentInput += command;
                 display.setText(currentInput);
@@ -159,7 +158,6 @@ public class calculator extends JFrame implements ActionListener {
         }
     }
 
-    // Perform calculation
     private void calculate() {
         try {
             double secondOperand = Double.parseDouble(currentInput);
@@ -178,52 +176,19 @@ public class calculator extends JFrame implements ActionListener {
                     result /= secondOperand;
                     break;
             }
-            display.setText(fullOperation + " = " + result);
-            currentInput = String.valueOf(result);
-
-        } catch (NumberFormatException ex) {
-            display.setText("Error");
-        }
-    }
-
-    // Apply scientific functions
-    private void applyFunction(String func) {
-        try {
-            double value = Double.parseDouble(currentInput);
-            switch (func) {
-                case "sin":
-                    result = Math.sin(Math.toRadians(value));
-                    break;
-                case "cos":
-                    result = Math.cos(Math.toRadians(value));
-                    break;
-                case "tan":
-                    result = Math.tan(Math.toRadians(value));
-                    break;
-                case "√":
-                    result = Math.sqrt(value);
-                    break;
-                case "x^2":
-                    result = Math.pow(value, 2);
-                    break;
-                case "log":
-                    result = Math.log10(value);
-                    break;
-                case "π":
-                    result = Math.PI;
-                    break;
-                case "e":
-                    result = Math.E;
-                    break;
+            String calculation = fullOperation + " = " + result;
+            if (history.size() == 20) {
+                history.removeFirst();
             }
-            display.setText(String.valueOf(result));
+            history.add(calculation);
+            display.setText(calculation);
             currentInput = String.valueOf(result);
+            updateHistory();
         } catch (NumberFormatException ex) {
             display.setText("Error");
         }
     }
 
-    // Toggle the visibility of scientific buttons
     private void toggleScientific() {
         isScientificVisible = !isScientificVisible;
         scientificPanel.setVisible(isScientificVisible);
@@ -231,7 +196,16 @@ public class calculator extends JFrame implements ActionListener {
         repaint();
     }
 
-    // Main method to run the calculator
+    private void toggleHistory() {
+        historyPanel.setVisible(!historyPanel.isVisible());
+        revalidate();
+        repaint();
+    }
+
+    private void updateHistory() {
+        historyArea.setText(String.join("\n", history));
+    }
+
     public static void main(String[] args) {
         SwingUtilities.invokeLater(calculator::new);
     }
