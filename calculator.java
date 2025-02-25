@@ -1,20 +1,19 @@
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
-import java.awt.geom.RoundRectangle2D;
+import java.util.ArrayList;
 import java.util.LinkedList;
+import java.util.List;
+import java.util.Stack;
 
 public class calculator extends JFrame implements ActionListener {
     private JTextField display;
     private String currentInput = "";
-    private double result = 0;
-    private String operator = "";
-
-    private JPanel scientificPanel;
-    private boolean isScientificVisible = false;
     private LinkedList<String> history;
     private JPanel historyPanel;
     private JTextArea historyArea;
+    private JPanel scientificPanel;
+    private boolean isScientificVisible = false;
 
     class RoundedButton extends JButton {
         public RoundedButton(String text) {
@@ -121,8 +120,6 @@ public class calculator extends JFrame implements ActionListener {
         switch (command) {
             case "C":
                 currentInput = "";
-                result = 0;
-                operator = "";
                 display.setText("");
                 break;
             case "DEL":
@@ -133,9 +130,7 @@ public class calculator extends JFrame implements ActionListener {
                 break;
             case "=":
                 calculate();
-                operator = "";
-                currentInput = String.valueOf(result); // Set currentInput only after "="
-                display.setText(String.valueOf(result));
+                currentInput = display.getText();
                 break;
             case "SCI":
                 toggleScientific();
@@ -143,61 +138,111 @@ public class calculator extends JFrame implements ActionListener {
             case "HIS":
                 toggleHistory();
                 break;
-            case "+":
-            case "-":
-            case "*":
-            case "/":
-            if (!currentInput.isEmpty()) {
-                if (!operator.isEmpty()) {
-                    calculate();
-                } else {
-                    result = Double.parseDouble(currentInput);
-                }
-                operator = command;
-                currentInput = "";
-                display.setText(String.valueOf(result)); //display the result of the previous operation.
-            }
-            break;
-        default:
-            currentInput += command;
-            display.setText(currentInput);
-            break;
+            default:
+                currentInput += command;
+                display.setText(currentInput);
+                break;
         }
     }
 
     private void calculate() {
-        try  {
-            if (!currentInput.isEmpty() && !operator.isEmpty()) {
-
-                double secondOperand = Double.parseDouble(currentInput);
-                String fullOperation = result + " " + operator + " " + secondOperand;
-                switch (operator) {
-
-                    case "+":
-                        result += secondOperand;
-                        break;
-                    case "-":
-                        result -= secondOperand;
-                        break;
-                    case "*":
-                        result *= secondOperand;
-                        break;
-                    case "/":
-                        result /= secondOperand;
-                        break;
-                }
-                String calculation = fullOperation + " = " + result;
-                if (history.size() == 20) {
-                    history.removeFirst();
-                }
-                history.add(calculation);
-                display.setText(calculation);
-                currentInput = String.valueOf(result);
-                updateHistory();
+        try {
+            List<String> tokens = tokenize(display.getText());
+            double result = evaluate(tokens);
+            String calculation = display.getText() + " = " + result;
+            if (history.size() == 20) {
+                history.removeFirst();
             }
-        } catch (NumberFormatException ex) {
+            history.add(calculation);
+            display.setText(String.valueOf(result));
+            updateHistory();
+        } catch (Exception ex) {
             display.setText("Error");
         }
+    }
+
+    private List<String> tokenize(String expression) {
+        List<String> tokens = new ArrayList<>();
+        StringBuilder currentNumber = new StringBuilder();
+        for (char c : expression.toCharArray()) {
+            if (Character.isDigit(c) || c == '.') {
+                currentNumber.append(c);
+            } else if (c == '+' || c == '-' || c == '*' || c == '/' || c == '(' || c == ')') {
+                if (currentNumber.length() > 0) {
+                    tokens.add(currentNumber.toString());
+                    currentNumber.setLength(0);
+                }
+                tokens.add(String.valueOf(c));
+            }
+        }
+        if (currentNumber.length() > 0) {
+            tokens.add(currentNumber.toString());
+        }
+        return tokens;
+    }
+
+    private double evaluate(List<String> tokens) {
+        Stack<Double> values = new Stack<>();
+        Stack<String> operators = new Stack<>();
+        for (String token : tokens) {
+            if (isNumber(token)) {
+                values.push(Double.parseDouble(token));
+            } else if (token.equals("(")) {
+                operators.push(token);
+            } else if (token.equals(")")) {
+                while (!operators.peek().equals("(")) {
+                    values.push(applyOperator(operators.pop(), values.pop(), values.pop()));
+                }
+                operators.pop(); // Remove "("
+            } else if (isOperator(token)) {
+                while (!operators.isEmpty() && hasPrecedence(token, operators.peek())) {
+                    values.push(applyOperator(operators.pop(), values.pop(), values.pop()));
+                }
+                operators.push(token);
+            }
+        }
+        while (!operators.isEmpty()) {
+            values.push(applyOperator(operators.pop(), values.pop(), values.pop()));
+        }
+        return values.pop();
+    }
+
+    private boolean isNumber(String token) {
+        try {
+            Double.parseDouble(token);
+            return true;
+        } catch (NumberFormatException e) {
+            return false;
+        }
+    }
+
+    private boolean isOperator(String token) {
+        return token.equals("+") || token.equals("-") || token.equals("*") || token.equals("/");
+    }
+
+    private boolean hasPrecedence(String op1, String op2) {
+        if (op2.equals("(") || op2.equals(")")) {
+            return false;
+        }
+        if ((op1.equals("*") || op1.equals("/")) && (op2.equals("+") || op2.equals("-"))) {
+            return false;
+        }
+        return true;
+    }
+
+    private double applyOperator(String operator, double b, double a) {
+        switch (operator) {
+            case "+":
+                return a + b;
+            case "-":
+                return a - b;
+            case "*":
+                return a * b;
+            case "/":
+                if (b == 0) throw new ArithmeticException("Division by zero");
+                return a / b;
+        }
+        return 0;
     }
 
     private void toggleScientific() {
