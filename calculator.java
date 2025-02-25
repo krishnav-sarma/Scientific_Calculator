@@ -134,6 +134,8 @@ public class calculator extends JFrame implements ActionListener {
             case "=":
                 calculate();
                 operator = "";
+                currentInput = String.valueOf(result); // Set currentInput only after "="
+                display.setText(String.valueOf(result));
                 break;
             case "SCI":
                 toggleScientific();
@@ -145,45 +147,54 @@ public class calculator extends JFrame implements ActionListener {
             case "-":
             case "*":
             case "/":
-                if (!currentInput.isEmpty()) {
+            if (!currentInput.isEmpty()) {
+                if (!operator.isEmpty()) {
+                    calculate();
+                } else {
                     result = Double.parseDouble(currentInput);
-                    operator = command;
-                    currentInput = "";
                 }
-                break;
-            default:
-                currentInput += command;
-                display.setText(currentInput);
-                break;
+                operator = command;
+                currentInput = "";
+                display.setText(String.valueOf(result)); //display the result of the previous operation.
+            }
+            break;
+        default:
+            currentInput += command;
+            display.setText(currentInput);
+            break;
         }
     }
 
     private void calculate() {
-        try {
-            double secondOperand = Double.parseDouble(currentInput);
-            String fullOperation = result + " " + operator + " " + secondOperand;
-            switch (operator) {
-                case "+":
-                    result += secondOperand;
-                    break;
-                case "-":
-                    result -= secondOperand;
-                    break;
-                case "*":
-                    result *= secondOperand;
-                    break;
-                case "/":
-                    result /= secondOperand;
-                    break;
+        try  {
+            if (!currentInput.isEmpty() && !operator.isEmpty()) {
+
+                double secondOperand = Double.parseDouble(currentInput);
+                String fullOperation = result + " " + operator + " " + secondOperand;
+                switch (operator) {
+
+                    case "+":
+                        result += secondOperand;
+                        break;
+                    case "-":
+                        result -= secondOperand;
+                        break;
+                    case "*":
+                        result *= secondOperand;
+                        break;
+                    case "/":
+                        result /= secondOperand;
+                        break;
+                }
+                String calculation = fullOperation + " = " + result;
+                if (history.size() == 20) {
+                    history.removeFirst();
+                }
+                history.add(calculation);
+                display.setText(calculation);
+                currentInput = String.valueOf(result);
+                updateHistory();
             }
-            String calculation = fullOperation + " = " + result;
-            if (history.size() == 20) {
-                history.removeFirst();
-            }
-            history.add(calculation);
-            display.setText(calculation);
-            currentInput = String.valueOf(result);
-            updateHistory();
         } catch (NumberFormatException ex) {
             display.setText("Error");
         }
