@@ -47,6 +47,7 @@ A feature-rich *Scientific Calculator* built using Java Swing. This calculator s
    ```bash
    git clone https://github.com/yourusername/scientific-calculator.git
 
-
+### 🎥 Demo Video
+### 📽️ Watch the Scientific Calculator in action!
 https://github.com/user-attachments/assets/6662e682-483e-45f8-a96f-bf1ceda19d9f
 
