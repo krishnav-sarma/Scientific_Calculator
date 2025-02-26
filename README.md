@@ -48,12 +48,5 @@ A feature-rich *Scientific Calculator* built using Java Swing. This calculator s
    git clone https://github.com/yourusername/scientific-calculator.git
 
 
-
-
-https://github.com/user-attachments/assets/a1c457a8-ffe8-4c01-8cf3-b71d11516f54
-
-
-
-
 https://github.com/user-attachments/assets/6662e682-483e-45f8-a96f-bf1ceda19d9f
 
